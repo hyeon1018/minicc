@@ -18,7 +18,7 @@ translation_unit :
 	external_dcl |
 	translation_unit external_dcl;
 external_dcl :
-	function_def  |``
+	function_def  |
 	declaration;
 function_def :
 	function_header compound_st;
