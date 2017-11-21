@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include "minic.tab.h"
 %}
 
@@ -25,8 +26,14 @@
 "/="	return T_DIV_ASSIGN;
 "%="	return T_MOD_ASSIGN;
 
-[A-Za-z_][A-Za-z0-9_]*	return T_IDENT;
-[1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)?	return T_NUMBER;
+[A-Za-z_][A-Za-z0-9_]* {
+	yylval.tval = strdup(yytext);
+	return T_IDENT;
+}
+[1-9][0-9]*|0([0-7]+|(x|X)[0-9A-Fa-f]*)? {
+	yylval.tval = strdup(yytext);
+	return T_NUMBER;
+}
 "/*"([^*]|\*+[^*/])*\**"*/"	;
 "//".*	;
 [ \t\n]	;
