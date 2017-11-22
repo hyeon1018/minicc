@@ -13,8 +13,7 @@ extern FILE * yyin;
 
 %token T_CONST T_ELSE T_IF T_INT T_RETURN T_VOID T_WHILE T_EQUAL T_NOTEQUAL T_LESSE T_GREATE T_AND T_OR T_INC T_DEC T_ADD_ASSIGN T_SUB_ASSIGN T_MUL_ASSIGN T_DIV_ASSIGN T_MOD_ASSIGN;
 %token <tval>  T_IDENT T_NUMBER;
-%nonassoc T_ELSE
-%nonassoc NOTELSE
+%nonassoc T_ELSE;
 %type <node> function_def translation_unit external_dcl function_name function_header compound_st
     dcl_spec formal_param opt_dcl_list declaration_list declaration dcl_specifiers dcl_specifier
     type_specifier type_qualifier opt_formal_param formal_param_list param_dcl init_dcl_list init_declarator
@@ -121,10 +120,11 @@ opt_dcl_list :
          };
 declaration_list :
 	declaration {
-                $$ = $1;
+                $$ = buildTree(DECLARATION, $1);
         } |
 	declaration_list declaration{
-                $$ = expandNode($1, $2);
+                astNode * tmp = buildTree(DECLARATION, $2);
+                $$ = expandNode($1, tmp);
         };
 declaration :
 	dcl_spec init_dcl_list ';'{
