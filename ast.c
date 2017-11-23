@@ -92,6 +92,7 @@ void printAST(astNode * node, int depth){
                 case INDEX : printf("INDEX"); break;
                 case COMPOUND_ST : printf("COMPOUND_ST"); break;
                 case PARAM_DCL : printf("PARAM_DCL"); break;
+                case INIT_DCL : printf("INIT_DCL"); break;
                 default : printf("%d",node->tokenNumber); break;
         }
 

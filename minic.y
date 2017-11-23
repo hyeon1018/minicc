@@ -40,7 +40,7 @@ external_dcl :
                 $$ = $1;
         }  |
 	declaration{
-                $$ = $1;
+                $$ = buildTree(DECLARATION, $1);
         };
 function_def :
 	function_header compound_st{
@@ -130,13 +130,15 @@ declaration :
 	dcl_spec init_dcl_list ';'{
                 astNode * tmp = buildTree(INIT_DCL_LIST, $2);
                 $$ = expandNode($1, tmp);
+
         };
 init_dcl_list :
 	init_declarator {
-                $$ = $1;
+                $$ = buildTree(INIT_DCL, $1);
         }|
 	init_dcl_list ',' init_declarator{
-                $$ = expandNode($1, $3);
+                astNode * tmp = buildTree(INIT_DCL, $3);
+                $$ = expandNode($1, tmp);
         };
 init_declarator :
 	declarator {
@@ -199,12 +201,8 @@ opt_expression :
          };
 if_st :
 	T_IF '(' expression ')' statement T_ELSE statement {
-                printAST($3,0);
-                printAST($5,0);
-                printAST($7,0);
                 expandNode($3, $5);
                 expandNode($3, $7);
-
                 $$ = buildTree(IF_ST, $3);
         }|
 	T_IF '(' expression ')' statement{
