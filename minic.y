@@ -1,13 +1,14 @@
 %{
 #include <stdio.h>
 #include "ast.h"
+#include "uparse.h"
 
 extern FILE * yyin;
 %}
 
 %union{
   struct _ast * node;
-  int * tval;
+  char * tval;
 }
 
 
@@ -25,7 +26,7 @@ extern FILE * yyin;
 mini_c :
 	translation_unit{
         astNode * result = buildTree(PROGRAM, $1);
-        printAST(result,0);
+        printAST(result, 0);
 	return 0;
 	};
 translation_unit :
@@ -40,18 +41,18 @@ external_dcl :
                 $$ = $1;
         }  |
 	declaration{
-                $$ = buildTree(DECLARATION, $1);
+                $$ = $1;
         };
 function_def :
 	function_header compound_st{
                 expandNode($1, $2);
-                $$ = buildTree(FUNCTION_DEF, $1);
+                $$ = buildTree(FUNC_DEF, $1);
         };
 function_header :
 	dcl_spec function_name formal_param{
                 expandNode($1, $2);
                 expandNode($1, $3);
-                $$ = buildTree(FUNCTION_HEADER, $1);
+                $$ = buildTree(FUNC_HEAD, $1);
         };
 dcl_spec :
 	dcl_specifiers{
@@ -73,14 +74,14 @@ dcl_specifier :
         };
 type_qualifier :
 	T_CONST {
-                $$ = createNode(SPEC_CONST, NULL);
+                $$ = createNode(CONST_NODE, NULL);
         };
 type_specifier :
 	T_INT {
-                $$ = createNode(SPEC_INT, NULL);
+                $$ = createNode(INT_NODE, NULL);
         } |
 	T_VOID {
-                $$ = createNode(SPEC_VOID, NULL);
+                $$ = createNode(VOID_NODE, NULL);
         };
 function_name :
 	T_IDENT {
@@ -88,12 +89,12 @@ function_name :
         };
 formal_param :
 	'(' opt_formal_param ')'{
-                $$ = $2;
+                $$ = buildTree(FORMAL_PARAM, $2);
         };
 opt_formal_param :
         {  $$ = NULL; }
 	| formal_param_list{
-                $$ = buildTree(FORMAL_PARAM_LIST, $1);
+                $$ = $1;
         };
 formal_param_list :
 	param_dcl  {
@@ -113,49 +114,47 @@ compound_st :
                 $$ = buildTree(COMPOUND_ST, $2);
         };
 opt_dcl_list :
-        { $$ = createNode(DECLARATION_LIST, NULL); }
+        { $$ = createNode(DCL_LIST, NULL); }
 	 | declaration_list{
 
-                 $$ = buildTree(DECLARATION_LIST, $1);
+                 $$ = buildTree(DCL_LIST, $1);
          };
 declaration_list :
 	declaration {
-                $$ = buildTree(DECLARATION, $1);
+                $$ = $1;
         } |
 	declaration_list declaration{
-                astNode * tmp = buildTree(DECLARATION, $2);
-                $$ = expandNode($1, tmp);
+                $$ = expandNode($1, $2);
         };
 declaration :
 	dcl_spec init_dcl_list ';'{
-                astNode * tmp = buildTree(INIT_DCL_LIST, $2);
-                $$ = expandNode($1, tmp);
-
+                expandNode($1, $2);
+                $$ = buildTree(DCL, $1);
         };
 init_dcl_list :
 	init_declarator {
-                $$ = buildTree(INIT_DCL, $1);
+                $$ = $1
         }|
 	init_dcl_list ',' init_declarator{
-                astNode * tmp = buildTree(INIT_DCL, $3);
-                $$ = expandNode($1, tmp);
+                $$ = expandNode($1, $3);
         };
 init_declarator :
 	declarator {
-                $$ = $1;
+                $$ = buildTree(DCL_ITEM, $1);
         } |
 	declarator '=' T_NUMBER {
                 astNode * tmp = createNode(NUMBER, $3);
-                $$ = expandNode($1, tmp);
+                expandNode($1, tmp);
+                $$ = buildTree(DCL_ITEM, $1);
         };
 declarator :
 	T_IDENT {
-                $$ = createNode(IDENT, $1);
+                $$ = buildTree(SIMPLE_VAR, createNode(IDENT, $1));
         }|
 	T_IDENT '[' opt_number ']'{
                 astNode * tmp = createNode(IDENT, $1);
-                astNode * tmp3 = buildTree(DEC_INDEX, $3);
-                $$ = expandNode(tmp, tmp3);
+                expandNode(tmp, $3);
+                buildTree(ARRAY_VAR, tmp);
         };
 opt_number :
         { $$ = createNode(NUMBER, NULL); }
@@ -163,9 +162,9 @@ opt_number :
                  $$ = createNode(NUMBER, $1);
          };
 opt_stat_list :
-        { $$ = createNode(STATEMENT_LIST, NULL); }
+        { $$ = NULL; }
 	 | statement_list{
-                 $$ = buildTree(STATEMENT_LIST, $1);
+                 $$ = buildTree(STAT_LIST, $1);
          };
 statement_list :
 	statement {
@@ -203,7 +202,7 @@ if_st :
 	T_IF '(' expression ')' statement T_ELSE statement {
                 expandNode($3, $5);
                 expandNode($3, $7);
-                $$ = buildTree(IF_ST, $3);
+                $$ = buildTree(IF_ELSE_ST, $3);
         }|
 	T_IF '(' expression ')' statement{
                 expandNode($3, $5);
@@ -256,7 +255,7 @@ logical_or_exp :
         } |
 	logical_or_exp T_OR logical_and_exp{
                 expandNode($1, $3);
-                $$ = buildTree(OR_OP, $1);
+                $$ = buildTree(LOGICAL_OR, $1);
         };
 logical_and_exp :
 	equality_exp   {
@@ -264,7 +263,7 @@ logical_and_exp :
         }|
 	logical_and_exp T_AND equality_exp{
                 expandNode($1, $3);
-                $$ = buildTree(AND_OP, $1);
+                $$ = buildTree(LOGICAL_AND, $1);
         };
 equality_exp :
 	relational_exp  {
@@ -272,11 +271,11 @@ equality_exp :
         }|
 	equality_exp T_EQUAL relational_exp {
                 expandNode($1, $3);
-                $$ = buildTree(EQUAL_OP, $1);
+                $$ = buildTree(EQ, $1);
         } |
 	equality_exp T_NOTEQUAL relational_exp{
                 expandNode($1, $3);
-                $$ = buildTree(NOTEQUAL_OP, $1);
+                $$ = buildTree(NE, $1);
         };
 relational_exp :
 	additive_exp  {
@@ -284,19 +283,19 @@ relational_exp :
         }|
 	relational_exp '>' additive_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(GREAT_OP, $1);
+                $$ = buildTree(GT, $1);
         }|
 	relational_exp '<' additive_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(LESS_OP, $1);
+                $$ = buildTree(LT, $1);
         }|
 	relational_exp T_LESSE additive_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(LESSE_OP, $1);
+                $$ = buildTree(LE, $1);
         }|
 	relational_exp T_GREATE additive_exp{
                 expandNode($1, $3);
-                $$ = buildTree(GREATE_OP, $1);
+                $$ = buildTree(GE, $1);
         };
 additive_exp :
 	multiplicative_exp  {
@@ -304,11 +303,11 @@ additive_exp :
         }|
 	additive_exp '+' multiplicative_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(ADD_OP, $1);
+                $$ = buildTree(ADD, $1);
         }|
 	additive_exp '-' multiplicative_exp{
                 expandNode($1, $3);
-                $$ = buildTree(SUB_OP, $1);
+                $$ = buildTree(SUB, $1);
         };
 multiplicative_exp :
 	unary_exp  {
@@ -316,31 +315,31 @@ multiplicative_exp :
         }|
 	multiplicative_exp '*' unary_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(MUL_OP, $1);
+                $$ = buildTree(MUL, $1);
         }|
 	multiplicative_exp '/' unary_exp  {
                 expandNode($1, $3);
-                $$ = buildTree(DIV_OP, $1);
+                $$ = buildTree(DIV, $1);
         }|
 	multiplicative_exp '%' unary_exp{
                 expandNode($1, $3);
-                $$ = buildTree(MOD_OP, $1);
+                $$ = buildTree(MOD, $1);
         };
 unary_exp :
 	postfix_exp  {
                 $$ = $1;
         }|
 	'-' unary_exp {
-                $$ = buildTree(MINUS_OP, $2);
+                $$ = buildTree(UNARY_MINUS, $2);
         } |
 	'!' unary_exp {
-                $$ = buildTree(NOT_OP, $2);
+                $$ = buildTree(LOGICAL_NOT, $2);
         } |
 	T_INC unary_exp {
-                $$ = buildTree(PRE_INC_OP, $2);
+                $$ = buildTree(PRE_INC, $2);
         } |
 	T_DEC unary_exp{
-                $$ = buildTree(PRE_DEC_OP, $2);
+                $$ = buildTree(PRE_DEC, $2);
         };
 postfix_exp :
 	primary_exp  {
@@ -352,13 +351,13 @@ postfix_exp :
         }|
 	postfix_exp '(' opt_actual_param ')' {
                 expandNode($1, $3);
-                $$ = buildTree(FUN_CALL, $1);
+                $$ = buildTree(CALL, $1);
         } |
 	postfix_exp T_INC {
-                $$ = buildTree(POST_INC_OP, $1);
+                $$ = buildTree(POST_INC, $1);
         } |
 	postfix_exp T_DEC{
-                $$ = buildTree(POST_DEC_OP, $1);
+                $$ = buildTree(POST_DEC, $1);
         };
 opt_actual_param :
 	actual_param{
@@ -367,7 +366,7 @@ opt_actual_param :
         { $$ = NULL; } ;
 actual_param :
 	actual_param_list{
-                $$ = buildTree(ACTUAL_PARAM_LIST, $1);
+                $$ = buildTree(ACTUAL_PARAM, $1);
         };
 actual_param_list :
 	assignment_exp {
@@ -393,6 +392,10 @@ primary_exp :
 int main(int argc, char *argv[])
 {
   yyparse();
+
+  printf("%d", hash("Aaaa")%32);
+  printf("%d", hash("iunfe")%32);
+  printf("%d", hash("line")%32);
   return 0;
 }
 
