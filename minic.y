@@ -393,9 +393,6 @@ int main(int argc, char *argv[])
 {
   yyparse();
 
-  printf("%d", hash("Aaaa")%32);
-  printf("%d", hash("iunfe")%32);
-  printf("%d", hash("line")%32);
   return 0;
 }
 
