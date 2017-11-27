@@ -3,8 +3,8 @@ LC = flex
 YC = bison
 TARGET = minic
 
-$(TARGET) : minic.tab.c minic.yy.c ast.o
-	$(CC) -o $(TARGET) minic.tab.c minic.yy.c ast.o -lfl
+$(TARGET) : minic.tab.c minic.yy.c ast.o ucodegen.o
+	$(CC) -o $(TARGET) minic.tab.c minic.yy.c ast.o ucodegen.o -lfl
 
 minic.yy.c : minic.l
 	$(LC) -o minic.yy.c minic.l
@@ -14,5 +14,9 @@ minic.tab.c : minic.y
 
 ast.o : ast.c
 	$(CC) -c ast.c
+
+ucodegen.o : ucodegen.c ast.o
+	$(CC) -c ucodegen.c ast.o
+
 clean :
 	rm *.o minic.tab.h minic.tab.c minic.yy.c minic.exe

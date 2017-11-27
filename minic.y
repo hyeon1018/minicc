@@ -26,7 +26,7 @@
 mini_c :
 	translation_unit{
         root = buildTree(PROGRAM, $1);
-        //printAST(result, 0);
+        printAST(root, 0);
 	return 0;
 	};
 translation_unit :
@@ -399,7 +399,6 @@ int main(int argc, char *argv[])
                 printf("Argument : minic [sourcefile] [destfile]");
                 return -1;
         }
-        destFile = fopen(argv[2], "w");
 
         //FILE READ
         sourceFile = fopen(argv[1], "r");
@@ -413,6 +412,13 @@ int main(int argc, char *argv[])
         while(!feof(yyin)){
                 yyparse();
         }
+
+        //AST -> ucode
+        destFile = fopen(argv[2], "w");
+        if(!destFile){
+                printf("can't create ucode file\n");
+        }
+        ucodegen(root);
 
         return 0;
 }
