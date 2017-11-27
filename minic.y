@@ -1,9 +1,9 @@
 %{
-#include <stdio.h>
-#include "ast.h"
-#include "uparse.h"
+        #include <stdio.h>
+        #include "ast.h"
 
-extern FILE * yyin;
+        extern FILE *yyin;
+        astNode * root;
 %}
 
 %union{
@@ -25,8 +25,8 @@ extern FILE * yyin;
 
 mini_c :
 	translation_unit{
-        astNode * result = buildTree(PROGRAM, $1);
-        printAST(result, 0);
+        root = buildTree(PROGRAM, $1);
+        //printAST(result, 0);
 	return 0;
 	};
 translation_unit :
@@ -391,9 +391,30 @@ primary_exp :
 
 int main(int argc, char *argv[])
 {
-  yyparse();
+        FILE * sourceFile;
+        FILE * destFile;
+        char * destName;
 
-  return 0;
+        if(argc != 3){
+                printf("Argument : minic [sourcefile] [destfile]");
+                return -1;
+        }
+        destFile = fopen(argv[2], "w");
+
+        //FILE READ
+        sourceFile = fopen(argv[1], "r");
+        if(!sourceFile){
+                printf("sourceFile is not exist");
+                return -1;
+        }
+
+        //source -> AST
+        yyin = sourceFile;
+        while(!feof(yyin)){
+                yyparse();
+        }
+
+        return 0;
 }
 
 void yyerror(char *s) {
