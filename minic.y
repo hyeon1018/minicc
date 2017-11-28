@@ -133,7 +133,7 @@ declaration :
         };
 init_dcl_list :
 	init_declarator {
-                $$ = $1
+                $$ = $1;
         }|
 	init_dcl_list ',' init_declarator{
                 $$ = expandNode($1, $3);
@@ -154,10 +154,10 @@ declarator :
 	T_IDENT '[' opt_number ']'{
                 astNode * tmp = createNode(IDENT, $1);
                 expandNode(tmp, $3);
-                buildTree(ARRAY_VAR, tmp);
+                $$ = buildTree(ARRAY_VAR, tmp);
         };
 opt_number :
-        { $$ = createNode(NUMBER, NULL); }
+        { $$ = NULL; }
 	 | T_NUMBER{
                  $$ = createNode(NUMBER, $1);
          };
