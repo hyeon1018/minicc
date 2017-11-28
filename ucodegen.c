@@ -123,7 +123,6 @@ void dclsimpleVar(astNode * simplevar, Specifier spec, Qualifier qual){
 
         offset++;
 }
-
 void dclarrayVar(astNode * arrayvar, Specifier spec, Qualifier qual){
         astNode *p = arrayvar->subNode;
         int size;
@@ -139,7 +138,6 @@ void dclarrayVar(astNode * arrayvar, Specifier spec, Qualifier qual){
         insertSymbol(p->tokenValue, qual, spec, level, offset, 1);
         offset += size;
 }
-
 void tokenDCL(astNode * cur){
         int typespec, typequal;
         astNode *p;
@@ -173,6 +171,22 @@ void tokenDCL(astNode * cur){
         }
 }
 
+void parseblock(astNode * compoundst){
+        assert(compoundst->tokenNumber == COMPOUND_ST);
+        astNode * p;
+
+        level++;
+        offset=0;
+
+        p = compoundst->subNode->subNode;
+        while(p){
+                tokenDCL(p->subNode);
+                p=p->nextNode;
+        }
+
+
+}
+
 void ucodegen(astNode * root, FILE * dest){
 
         astNode * cur;
@@ -195,18 +209,14 @@ void ucodegen(astNode * root, FILE * dest){
                 cur = cur->nextNode;
         }
 
-        //add level;
-        level++;
-
         cur = root->subNode;
         while(cur){
                 if(cur->tokenNumber == FUNC_DEF){
-                        //parse function detail;
-                        //block -> symbol table;
+                        //parse
+                        parseblock(cur->subNode->nextNode);
                 }
                 cur = cur->nextNode;
         }
 
-        printf("A");
         printST();
 }
