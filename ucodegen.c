@@ -23,8 +23,9 @@ void initSymtab(){
         offset=0;
 
         symboltable->leveltop = 0;
-        symboltable->leveltable[symboltable->leveltop] = &(symboltable->table[0]);
         symboltable->avail = &(symboltable->table[0]);
+        symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
+
 }
 
 //print Symboltable (For test)
@@ -199,15 +200,15 @@ void tokenDCL(astNode * cur){
 
 void resetSymbol(){
         sym * cursym = symboltable->avail;
-        cursym-- ;
         symboltable->leveltop--;
-        while(cursym > symboltable->leveltable[symboltable->leveltop]){
+        cursym--;
+        while(cursym >= symboltable->leveltable[symboltable->leveltop]){
                 //reset
                 int h = hash(cursym->name);
                 symboltable->hashtable[h] = cursym->nextSym;
                 cursym--;
         }
-        symboltable->avail = cursym;
+        symboltable->avail = cursym+1;
 
 }
 void parseblock(astNode * compoundst){
@@ -220,7 +221,6 @@ void parseblock(astNode * compoundst){
 
         symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
         symboltable->leveltop++;
-
         //set symboltable
         p = compoundst->subNode->subNode;
         while(p){
@@ -267,4 +267,5 @@ void ucodegen(astNode * root, FILE * dest){
         }
 
         printST();
+        printf("end");
 }
