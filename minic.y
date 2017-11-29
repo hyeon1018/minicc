@@ -418,6 +418,7 @@ int main(int argc, char *argv[])
         if(!destFile){
                 printf("can't create ucode file\n");
         }
+        printf("startgen");
         ucodegen(root);
 
         return 0;

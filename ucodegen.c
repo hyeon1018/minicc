@@ -1,8 +1,4 @@
-
-
-
 #include "ucodegen.h"
-
 
 symtab * symboltable;
 FILE * destFile;
@@ -11,7 +7,7 @@ int level, offset;
 
 //get hash value of identifer
 int hash(char * string){
-        int value = 0;
+        unsigned int value = 0;
         while(*string != 0){
                 value = value*11 + *string;
                 string++;
@@ -27,6 +23,7 @@ void initSymtab(){
         offset=0;
 
         symboltable->leveltop = 0;
+        symboltable->leveltable[symboltable->leveltop] = &(symboltable->table[0]);
         symboltable->avail = &(symboltable->table[0]);
 }
 
@@ -57,7 +54,6 @@ void printST(){
                 printf("%d\t%d\t%d\t%x\n",cur->level, cur->offset, cur->dim, cur->nextSym);
                 cur++;
         }
-
 }
 
 //insert symbol on symboltable;
@@ -97,6 +93,36 @@ sym * findtable(char * name){
         return 0;
 }
 
+void dclfunchead(astNode * cur){
+        int argunum = 0;
+        astNode *p,  *q;
+        Specifier spec = SPEC_NONE;
+
+        assert(cur->tokenNumber == FUNC_HEAD);
+        cur = cur->subNode;
+        //get funtion return type from DCL_SPEC
+        p = cur->subNode;
+        while(p){
+                switch (p->tokenNumber) {
+                        case INT_NODE : spec = SPEC_INT; break;
+                        case VOID_NODE : spec = SPEC_VOID; break;
+                        default : break;
+                }
+                p = p->nextNode;
+        }
+
+        //dim = argu numbers
+        q = cur->nextNode->nextNode;
+        q = q->subNode;
+        while(q){
+                argunum++;
+                q=q->nextNode;
+        }
+        //insert function name on symbol Table
+        insertSymbol(cur->nextNode->tokenValue, QUAL_FUNC, spec, level, offset, argunum);
+
+        offset++;
+}
 void dclsimpleVar(astNode * simplevar, Specifier spec, Qualifier qual){
         int sign = 1;
 
@@ -154,7 +180,7 @@ void tokenDCL(astNode * cur){
                 switch (p->tokenNumber) {
                         case INT_NODE: typespec = SPEC_INT; break;
                         case CONST_NODE : typequal = QUAL_CONST; break;
-                        default : break;//??
+                        default : break;
                 }
                 p = p->nextNode;
         }
@@ -171,20 +197,44 @@ void tokenDCL(astNode * cur){
         }
 }
 
+void resetSymbol(){
+        sym * cursym = symboltable->avail;
+        cursym-- ;
+        symboltable->leveltop--;
+        while(cursym > symboltable->leveltable[symboltable->leveltop]){
+                //reset
+                int h = hash(cursym->name);
+                symboltable->hashtable[h] = cursym->nextSym;
+                cursym--;
+        }
+        symboltable->avail = cursym;
+
+}
 void parseblock(astNode * compoundst){
         assert(compoundst->tokenNumber == COMPOUND_ST);
         astNode * p;
 
+        //set var for symboltable
         level++;
         offset=0;
 
+        symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
+        symboltable->leveltop++;
+
+        //set symboltable
         p = compoundst->subNode->subNode;
         while(p){
                 tokenDCL(p->subNode);
                 p=p->nextNode;
         }
 
+        //parse statement
 
+
+        //reset symboltable
+
+        printST();
+        resetSymbol();
 }
 
 void ucodegen(astNode * root, FILE * dest){
@@ -201,8 +251,7 @@ void ucodegen(astNode * root, FILE * dest){
                 if(cur->tokenNumber == DCL){
                         tokenDCL(cur->subNode);
                 }else if(cur->tokenNumber == FUNC_DEF){
-                        //add fun spec on symboltable;
-
+                        dclfunchead(cur->subNode);
                 }else{
                         //error;
                 }
@@ -212,7 +261,6 @@ void ucodegen(astNode * root, FILE * dest){
         cur = root->subNode;
         while(cur){
                 if(cur->tokenNumber == FUNC_DEF){
-                        //parse
                         parseblock(cur->subNode->nextNode);
                 }
                 cur = cur->nextNode;
