@@ -31,13 +31,13 @@ void initSymtab(){
 //print Symboltable (For test)
 void printST(){
         printf("=====Symbol Table=====\n");
-        printf("Addr\tname\thash\tqual\tspec\tlevel\toffset\tdim\tnewtSym\n");
+        printf("Addr\t%-15s\thash\tqual\tspec\tlevel\toffset\tdim\tnewtSym\n", "name");
         sym * cur = &(symboltable->table[0]);
 
         while(cur < symboltable->avail){
                 //name, hashvalue, qual, spec, level, offset, dim
 
-                printf("%x\t%s\t%d\t",cur ,cur->name, hash(cur->name));
+                printf("%x\t%-15s\t%d\t",cur ,cur->name, hash(cur->name));
                 switch (cur->qual) {
                         case QUAL_NONE: printf("Q_NONE\t"); break;
                         case QUAL_FUNC: printf("Q_FUNC\t"); break;
