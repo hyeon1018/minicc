@@ -28,6 +28,9 @@ void initSymtab(){
         symboltable->avail = &(symboltable->table[0]);
         symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
 
+        for(int i = 0 ; i < HASH_SIZE ; i++){
+                symboltable->hashtable[i]=NULL;
+        }
 }
 
 //print Symboltable (For test)
