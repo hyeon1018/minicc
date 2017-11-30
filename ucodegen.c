@@ -1,5 +1,7 @@
 #include "ucodegen.h"
 
+void parsestatments(astNode * block);
+
 symtab * symboltable;
 FILE * destFile;
 
@@ -57,7 +59,7 @@ void printST(){
         }
 }
 
-//insert symbol on symboltable;
+//symboltable;
 void insertSymbol(char * name, Qualifier qual, Specifier spec, int level, int offset, int dim){
         int h;
         sym * nextsym;
@@ -81,7 +83,19 @@ void insertSymbol(char * name, Qualifier qual, Specifier spec, int level, int of
         //move avail;
         symboltable->avail += 1;
 }
+void resetSymbol(){
+        sym * cursym = symboltable->avail;
+        symboltable->leveltop--;
+        cursym--;
+        while(cursym >= symboltable->leveltable[symboltable->leveltop]){
+                //reset
+                int h = hash(cursym->name);
+                symboltable->hashtable[h] = cursym->nextSym;
+                cursym--;
+        }
+        symboltable->avail = cursym+1;
 
+}
 sym * findtable(char * name){
         int h = hash(name);
         sym * cur = symboltable->hashtable[h];
@@ -230,19 +244,8 @@ void tokenDCL(astNode * cur){
         }
 }
 
-void resetSymbol(){
-        sym * cursym = symboltable->avail;
-        symboltable->leveltop--;
-        cursym--;
-        while(cursym >= symboltable->leveltable[symboltable->leveltop]){
-                //reset
-                int h = hash(cursym->name);
-                symboltable->hashtable[h] = cursym->nextSym;
-                cursym--;
-        }
-        symboltable->avail = cursym+1;
 
-}
+
 void parseblock(astNode * compoundst){
         assert(compoundst->tokenNumber == COMPOUND_ST);
         astNode * p;
@@ -260,7 +263,12 @@ void parseblock(astNode * compoundst){
         }
 
         //parse statement
-
+        p = compoundst->subNode->nextNode->subNode;
+        printf("tn : %d\n", p->tokenNumber);
+        while(p){
+                parsestatments(p);
+                p = p->nextNode;
+        }
 
         //reset symboltable
 
@@ -271,7 +279,7 @@ void parsefunction(astNode * func_def){
         assert(func_def->tokenNumber==FUNC_DEF);
         astNode * func_header = func_def->subNode;
         astNode * compoundst = func_header->nextNode;
-
+        astNode * p;
         //symboltable
         level++;
         offset=0;
@@ -280,22 +288,43 @@ void parsefunction(astNode * func_def){
         //insert param dcl on symboltable;
         dclparam(func_header->subNode->nextNode->nextNode);
 
-
-        //parse block;
-        astNode * p = compoundst->subNode->subNode;
+        //parse dcl;
+        p = compoundst->subNode->subNode;
         while(p){
                 tokenDCL(p->subNode);
                 p=p->nextNode;
         }
-
         //parse statement
-
+        p = compoundst->subNode->nextNode->subNode;
+        printf("tn : %d\n", p->tokenNumber);
+        while(p){
+                parsestatments(p);
+                p = p->nextNode;
+        }
 
         //reset symboltable
 
         printST();
         resetSymbol();
 }
+void parsestatments(astNode * statement){
+
+        switch (statement->tokenNumber) {
+                case COMPOUND_ST : parseblock(statement); break;
+                case IF_ST : parsestatments(statement->subNode->nextNode); break;
+                case IF_ELSE_ST : {
+                        parsestatments(statement->subNode->nextNode);
+                        parsestatments(statement->subNode->nextNode->nextNode);
+                        break;
+                }
+                case WHILE_ST : parsestatments(statement->subNode->nextNode);
+                default : break; //not yet implements
+        }
+
+
+
+}
+
 void ucodegen(astNode * root, FILE * dest){
 
         astNode * cur;
@@ -326,5 +355,5 @@ void ucodegen(astNode * root, FILE * dest){
         }
 
         printST();
-        printf("end");
+        printf("end\n");
 }
