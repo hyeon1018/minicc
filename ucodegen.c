@@ -165,6 +165,38 @@ void dclarrayVar(astNode * arrayvar, Specifier spec, Qualifier qual){
         insertSymbol(p->tokenValue, qual, spec, level, offset, 1);
         offset += size;
 }
+void dclparam(astNode * formalparam){
+        //declaration formal params
+        astNode * p=formalparam->subNode; // p = param dcl;
+
+        while(p){
+                astNode * s = p->subNode->subNode;
+                Specifier typespec = SPEC_NONE;
+                Qualifier typequal = QUAL_PARA;
+
+                while(s){
+                        switch (s->tokenNumber) {
+                                case INT_NODE: typespec = SPEC_INT; break;
+                                case CONST_NODE : typequal = QUAL_CONST; break;
+                                default : break;
+                        }
+                        s = s->nextNode;
+                }
+
+                s = p->subNode->nextNode;
+                switch (s->tokenNumber) {
+                        case SIMPLE_VAR: dclsimpleVar(s, typespec, typequal); break;
+                        case ARRAY_VAR : dclarrayVar(s, typespec, typequal); break;
+                }
+
+
+
+                p = p->nextNode;
+        }
+
+
+
+}
 void tokenDCL(astNode * cur){
         int typespec, typequal;
         astNode *p;
@@ -216,8 +248,7 @@ void parseblock(astNode * compoundst){
         astNode * p;
 
         //set var for symboltable
-        level++;
-        offset=0;
+
 
         symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
         symboltable->leveltop++;
@@ -236,7 +267,35 @@ void parseblock(astNode * compoundst){
         printST();
         resetSymbol();
 }
+void parsefunction(astNode * func_def){
+        assert(func_def->tokenNumber==FUNC_DEF);
+        astNode * func_header = func_def->subNode;
+        astNode * compoundst = func_header->nextNode;
 
+        //symboltable
+        level++;
+        offset=0;
+        symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
+        symboltable->leveltop++;
+        //insert param dcl on symboltable;
+        dclparam(func_header->subNode->nextNode->nextNode);
+
+
+        //parse block;
+        astNode * p = compoundst->subNode->subNode;
+        while(p){
+                tokenDCL(p->subNode);
+                p=p->nextNode;
+        }
+
+        //parse statement
+
+
+        //reset symboltable
+
+        printST();
+        resetSymbol();
+}
 void ucodegen(astNode * root, FILE * dest){
 
         astNode * cur;
@@ -261,7 +320,7 @@ void ucodegen(astNode * root, FILE * dest){
         cur = root->subNode;
         while(cur){
                 if(cur->tokenNumber == FUNC_DEF){
-                        parseblock(cur->subNode->nextNode);
+                        parsefunction(cur);
                 }
                 cur = cur->nextNode;
         }
