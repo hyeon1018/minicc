@@ -388,7 +388,7 @@ void parseexpression(astNode * expression){
                                 printrightvalue(left);
                         }
 
-                        if(left->subNode){
+                        if(right->subNode){
                                 parseexpression(right);
                         }else{
                                 printrightvalue(right);
@@ -504,41 +504,39 @@ void parseexpression(astNode * expression){
                                 parseexpression(p);
                                 lvalue = 0;
                         }
-
                         if(p->subNode){
                                 parseexpression(p);
                         }else{
                                 printrightvalue(p);
                         }
-
                         switch(expression->tokenNumber){
 
                                 case PRE_INC : {
+                                        print0op("inc");
                                         if(expdepth > 1){
                                                 print0op("dup");
                                         }
-                                        print0op("inc");
                                         break;
                                 }
                                 case POST_INC : {
-                                        print0op("inc");
                                         if(expdepth > 1){
                                                 print0op("dup");
                                         }
+                                        print0op("inc");
                                         break;
                                 }
                                 case PRE_DEC : {
+                                        print0op("dec");
                                         if(expdepth > 1){
                                                 print0op("dup");
                                         }
-                                        print0op("dec");
                                         break;
                                 }
                                 case POST_DEC : {
-                                        print0op("dec");
                                         if(expdepth > 1){
                                                 print0op("dup");
                                         }
+                                        print0op("dec");
                                         break;
                                 }
                         }
@@ -614,8 +612,8 @@ void parseexpression(astNode * expression){
                         }
                         default : break;
                 }
-                expdepth--;
         }
+        expdepth--;
 }
 void parsestatments(astNode * statement){
         astNode * cur;
