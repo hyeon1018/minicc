@@ -21,7 +21,8 @@ typedef struct _symbol{
         Specifier spec;
         int level;
         int offset;
-        int dim;
+        int width;
+        int init;
         struct _symbol * nextSym;
 }sym;
 

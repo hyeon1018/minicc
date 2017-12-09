@@ -19,7 +19,7 @@ enum nodeNumber {
         ADD, SUB, MUL, DIV, MOD,
         UNARY_MINUS, LOGICAL_NOT, PRE_INC, PRE_DEC, INDEX,
         CALL, POST_INC, POST_DEC, ACTUAL_PARAM, NUMBER,
-        IDENT
+        IDENT, IDENT_ADDR
 };
 
 astNode * buildTree(int tokenNumber, astNode * firstNode);

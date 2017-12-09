@@ -191,7 +191,7 @@ statement :
         };
 expression_st :
 	opt_expression ';'{
-                $$= $1;
+                $$= buildTree(EXP_ST, $1);
         };
 opt_expression :
         { $$ = NULL; }
@@ -340,6 +340,9 @@ unary_exp :
         } |
 	T_DEC unary_exp{
                 $$ = buildTree(PRE_DEC, $2);
+        } |
+        '&' unary_exp{
+                $$ = buildTree(IDENT_ADDR, $2);
         };
 postfix_exp :
 	primary_exp  {
@@ -418,8 +421,7 @@ int main(int argc, char *argv[])
         if(!destFile){
                 printf("can't create ucode file\n");
         }
-        printf("startgen\n");
-        ucodegen(root);
+        ucodegen(root, destFile);
 
         return 0;
 }
