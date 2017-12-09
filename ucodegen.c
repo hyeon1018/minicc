@@ -6,8 +6,6 @@ symtab * symboltable;
 FILE * destFile;
 
 int level, offset;
-int depth;
-
 
 //get hash value of identifer
 int hash(char * string){
@@ -300,7 +298,6 @@ void parsefunction(astNode * func_def){
         astNode * p;
 
         //symboltable
-        depth++;
         level++;
         offset=1;
         symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
@@ -316,7 +313,7 @@ void parsefunction(astNode * func_def){
         }
         printST();
 
-        printproc(func_header->subNode->nextNode->tokenValue ,offset-1, level, depth);
+        printproc(func_header->subNode->nextNode->tokenValue ,offset-1, level, 2);
         for(sym * s = symboltable->leveltable[symboltable->leveltop-1]; s < symboltable->avail; s++){
                 printsym(level, s->offset, s->width);
         }
@@ -332,7 +329,6 @@ void parsefunction(astNode * func_def){
         print0op("end");
 
         //reset symboltable
-        depth--;
         printST();
         resetSymbol();
 }
@@ -628,7 +624,6 @@ void parsestatments(astNode * statement){
                 }
                 case COMPOUND_ST : {
                         char label[10] = {0};
-                        depth++;
                         level++;
                         offset=1;
                         symboltable->leveltable[symboltable->leveltop] = symboltable->avail;
@@ -639,13 +634,6 @@ void parsestatments(astNode * statement){
                                 tokenDCL(cur->subNode);
                                 cur=cur->nextNode;
                         }
-                        if(offset > 1){
-                                getlabel(label);
-                                printproc(label, offset-1, level, depth);
-                                for(sym * s = symboltable->leveltable[symboltable->leveltop-1]; s < symboltable->avail; s++){
-                                        printsym(level, s->offset, s->width);
-                                }
-                        }
                         //parse statement
                         cur = statement->subNode->nextNode->subNode;
                         while(cur){
@@ -654,10 +642,9 @@ void parsestatments(astNode * statement){
                         }
 
                         //reset symboltable
-
                         printST();
                         resetSymbol();
-                        depth--;
+
                         break;
                 }
                 case IF_ST :{
@@ -718,7 +705,6 @@ void ucodegen(astNode * root, FILE * dest){
 
         initSymtab();
         destFile = dest;
-        depth = 1;
 
         //add global vars and functions on symboltable;
         cur = root->subNode;
