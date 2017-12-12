@@ -5,7 +5,7 @@
 void main()
 {
     int n, f;
-    read(n);
+    read(&n);
     write(n);
     f = factorial(n);
     write(f);
@@ -13,6 +13,8 @@ void main()
 
 int factorial(int n)
 {
-    if (n == 1) return 1;
+    if (n == 1){
+         return 1;
+    }
     else return n * factorial(n-1);
 }

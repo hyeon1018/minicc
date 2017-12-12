@@ -6,6 +6,8 @@ void main() {
 
   i=2;
   while (i <= max) {
+        int a;
+        a = 20;
 	sum = 0;
 	k = i/2;
 	j = 1;
@@ -16,5 +18,6 @@ void main() {
 	}
 	if ( i == sum) write(i);
 	++i;
+        write(a);
   }
 }
