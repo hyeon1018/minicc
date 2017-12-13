@@ -34,4 +34,4 @@ typedef struct _symboltable{
         struct _symbol * avail;
 }symtab;
 
-void ucodegen(astNode * root, FILE * dest);
+void ucodegen(astNode * root, FILE * dest, int printsy);

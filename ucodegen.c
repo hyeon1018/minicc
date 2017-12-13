@@ -6,6 +6,7 @@ symtab * symboltable;
 FILE * destFile;
 
 int level, offset;
+int printsyt;
 
 //get hash value of identifer
 int hash(char * string){
@@ -35,30 +36,32 @@ void initSymtab(){
 
 //print Symboltable (For test)
 void printST(){
-        printf("=====Symbol Table=====\n");
-        printf("Addr\t%-15s\thash\tqual\tspec\tlevel\toffset\twidth\tinit\tnewtSym\n", "name");
-        sym * cur = &(symboltable->table[0]);
+        if(printsyt){
+                printf("=====Symbol Table=====\n");
+                printf("Addr\t%-15s\thash\tqual\tspec\tlevel\toffset\twidth\tinit\tnewtSym\n", "name");
+                sym * cur = &(symboltable->table[0]);
 
-        while(cur < symboltable->avail){
-                //name, hashvalue, qual, spec, level, offset, width
+                while(cur < symboltable->avail){
+                        //name, hashvalue, qual, spec, level, offset, width
 
-                printf("%x\t%-15s\t%d\t",cur ,cur->name, hash(cur->name));
-                switch (cur->qual) {
-                        case QUAL_NONE: printf("Q_NONE\t"); break;
-                        case QUAL_FUNC: printf("Q_FUNC\t"); break;
-                        case QUAL_PARA: printf("Q_PARA\t"); break;
-                        case QUAL_CONST: printf("Q_CONST\t"); break;
-                        case QUAL_VAR: printf("Q_VAR\t"); break;
-                        default : printf("\t"); break;
+                        printf("%x\t%-15s\t%d\t",cur ,cur->name, hash(cur->name));
+                        switch (cur->qual) {
+                                case QUAL_NONE: printf("Q_NONE\t"); break;
+                                case QUAL_FUNC: printf("Q_FUNC\t"); break;
+                                case QUAL_PARA: printf("Q_PARA\t"); break;
+                                case QUAL_CONST: printf("Q_CONST\t"); break;
+                                case QUAL_VAR: printf("Q_VAR\t"); break;
+                                default : printf("\t"); break;
+                        }
+                        switch (cur->spec) {
+                                case SPEC_NONE: printf("NONE\t"); break;
+                                case SPEC_VOID: printf("VOID\t"); break;
+                                case SPEC_INT: printf("INT\t"); break;
+                                default : printf("\t"); break;
+                        }
+                        printf("%d\t%d\t%d\t%d\t%x\n",cur->level, cur->offset, cur->width,cur->init, cur->nextSym);
+                        cur++;
                 }
-                switch (cur->spec) {
-                        case SPEC_NONE: printf("NONE\t"); break;
-                        case SPEC_VOID: printf("VOID\t"); break;
-                        case SPEC_INT: printf("INT\t"); break;
-                        default : printf("\t"); break;
-                }
-                printf("%d\t%d\t%d\t%d\t%x\n",cur->level, cur->offset, cur->width,cur->init, cur->nextSym);
-                cur++;
         }
 }
 
@@ -699,12 +702,13 @@ void parsestatments(astNode * statement){
 
 }
 
-void ucodegen(astNode * root, FILE * dest){
+void ucodegen(astNode * root, FILE * dest, int printsy){
 
         astNode * cur;
 
         initSymtab();
         destFile = dest;
+        printsyt = printsy;
 
         //add global vars and functions on symboltable;
         cur = root->subNode;

@@ -26,7 +26,6 @@
 mini_c :
 	translation_unit{
         root = buildTree(PROGRAM, $1);
-        printAST(root, 0);
 	return 0;
 	};
 translation_unit :
@@ -397,9 +396,11 @@ int main(int argc, char *argv[])
         FILE * sourceFile;
         FILE * destFile;
         char * destName;
+        int printast = 0;
+        int printsyt = 0;
 
-        if(argc != 3){
-                printf("Argument : minic [sourcefile] [destfile]");
+        if(argc < 3){
+                printf("Argument : minic [sourcefile] [destfile] [flags]\nflags : -a print abstract symtax tree\n-s print symbol table dump before reset");
                 return -1;
         }
 
@@ -410,10 +411,19 @@ int main(int argc, char *argv[])
                 return -1;
         }
 
+        for(int i = 3 ; i < argc ; i++){
+                if( strcmp(argv[i], "-a") == 0 ) printast = 1;
+                if( strcmp(argv[i], "-s") == 0 ) printsyt = 1;
+        }
+
         //source -> AST
         yyin = sourceFile;
         while(!feof(yyin)){
                 yyparse();
+        }
+
+        if(printast){
+                printAST(root, 0);
         }
 
         //AST -> ucode
@@ -421,7 +431,7 @@ int main(int argc, char *argv[])
         if(!destFile){
                 printf("can't create ucode file\n");
         }
-        ucodegen(root, destFile);
+        ucodegen(root, destFile, printsyt);
 
         return 0;
 }
