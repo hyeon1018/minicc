@@ -6,11 +6,11 @@ void main()
     int temp;
     i = 1;
 
-    read(element);
+    read(&element);
     while (element != 0) { // read the list
         list[i] = element;
         ++i;
-        read(element);
+        read(&element);
     }
 
     total = i - 1;
@@ -34,4 +34,3 @@ void main()
         ++i;
     }
 }
-
