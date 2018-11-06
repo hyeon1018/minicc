@@ -113,7 +113,7 @@ sym * findSymbol(char * name){
                 }
                 cur = cur->nextSym;
         }
-        return -1;
+        return (sym *)-1;
 }
 
 //printucode
@@ -149,7 +149,7 @@ void printrightvalue(astNode * rightvalue){
                 print1op("ldc", atoi(rightvalue->tokenValue));
         }else{
                 symbol = findSymbol(rightvalue->tokenValue);
-                if(symbol != -1){
+                if(symbol != (sym *)-1){
                         if(symbol->qual == QUAL_CONST){ //상수
                                 print1op("ldc", symbol->init);
                         }else if(symbol->width > 1){
@@ -336,8 +336,8 @@ void parsefunction(astNode * func_def){
         resetSymbol();
 }
 void parseexpression(astNode * expression){
-        static lvalue = 0;
-        static expdepth = 0;
+        static int lvalue = 0;
+        static int expdepth = 0;
         expdepth++;
         switch (expression->tokenNumber) {
                 case ASSIGN_OP: {
@@ -358,7 +358,7 @@ void parseexpression(astNode * expression){
 
                         if(left->subNode == NULL){
                                 sym * symbol = findSymbol(left->tokenValue);
-                                if(symbol != -1){
+                                if(symbol != (sym *)-1){
                                         print2op("str", symbol->level, symbol->offset);
                                 }
                         }else{
@@ -403,7 +403,7 @@ void parseexpression(astNode * expression){
 
                         if(!left->subNode){
                                 sym * symbol = findSymbol(left->tokenValue);
-                                if(symbol != -1){
+                                if(symbol != (sym *)-1){
                                         print2op("str", symbol->level, symbol->offset);
                                 }
                         }else{
@@ -482,7 +482,7 @@ void parseexpression(astNode * expression){
                                 printrightvalue(indexp);
                         }
                         symbol = findSymbol(expression->subNode->tokenValue);
-                        if(symbol != -1){
+                        if(symbol != (sym *)-1){
                                 print2op("lda", symbol->level, symbol->offset);
                                 print0op("add");
                         }
@@ -542,7 +542,7 @@ void parseexpression(astNode * expression){
 
                         if(!p->subNode){
                                 sym * symbol = findSymbol(p->tokenValue);
-                                if(symbol != -1){
+                                if(symbol != (sym *)-1){
                                         print2op("str", symbol->level, symbol->offset);
                                 }
                         }else{
@@ -554,7 +554,7 @@ void parseexpression(astNode * expression){
                         astNode * p = expression->subNode;
                         sym * symbol = findSymbol(p->tokenValue);
 
-                        if(symbol != -1){
+                        if(symbol != (sym *)-1){
                                 int argnum = 0;
                                 print0op("ldp");
                                 p = p->nextNode->subNode;
@@ -583,7 +583,7 @@ void parseexpression(astNode * expression){
                                 switch(expression->subNode->tokenNumber){
                                         case IDENT : {
                                                 symbol = findSymbol(expression->subNode->tokenValue);
-                                                if(symbol != -1){
+                                                if(symbol != (sym *)-1){
                                                         print2op("lda", symbol->level, symbol->offset);
                                                 }
                                                 break;
@@ -598,7 +598,7 @@ void parseexpression(astNode * expression){
                                                 }
 
                                                 symbol = findSymbol(expression->subNode->subNode->tokenValue);
-                                                if(symbol != -1){
+                                                if(symbol != (sym *)-1){
                                                         print2op("lda", symbol->level, symbol->offset);
                                                         print0op("add");
                                                 }

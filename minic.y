@@ -436,6 +436,6 @@ int main(int argc, char *argv[])
         return 0;
 }
 
-void yyerror(char *s) {
+int yyerror(char *s) {
 	printf("%s\n",s );
 }
