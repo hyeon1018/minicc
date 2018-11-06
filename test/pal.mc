@@ -7,7 +7,7 @@ void main()
     int org, rev; // org: original, rev: reverse
     int i, j;
 
-    read(org);
+    read(&org);
     if (org < 0) org = (-1) * org;
     i = org;
     rev = 0;
