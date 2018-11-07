@@ -20,8 +20,8 @@ minic.tab.c : minic.y
 ast.o : ast.c
 	$(CC) -c ast.c
 
-ucodegen.o : ucodegen.c ast.o
-	$(CC) -c ucodegen.c ast.o
+ucodegen.o : ucodegen.c
+	$(CC) -c ucodegen.c
 
 clean :
 	@rm -f *.o minic.tab.h minic.tab.c minic.yy.c minic.exe minic
