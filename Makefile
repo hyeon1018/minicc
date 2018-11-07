@@ -1,7 +1,12 @@
 CC = gcc
 LC = flex
 YC = bison
-TARGET = minic
+
+ifeq ($(OS), Windows_NT)
+	TARGET = minic.exe
+else
+	TARGET = minic
+endif
 
 $(TARGET) : minic.tab.c minic.yy.c ast.o ucodegen.o
 	$(CC) -o $(TARGET) minic.tab.c minic.yy.c ast.o ucodegen.o -lfl
@@ -15,8 +20,8 @@ minic.tab.c : minic.y
 ast.o : ast.c
 	$(CC) -c ast.c
 
-ucodegen.o : ucodegen.c ast.o
-	$(CC) -c ucodegen.c ast.o
+ucodegen.o : ucodegen.c
+	$(CC) -c ucodegen.c
 
 clean :
-	rm *.o minic.tab.h minic.tab.c minic.yy.c minic.exe
+	@rm -f *.o minic.tab.h minic.tab.c minic.yy.c minic.exe minic
