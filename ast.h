@@ -1,3 +1,7 @@
+#ifndef _AST_H_
+#define _AST_H_
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -26,3 +30,5 @@ astNode * buildTree(int tokenNumber, astNode * firstNode);
 astNode * expandNode(astNode * firstNode, astNode * lastNode);
 astNode * createNode(int tokenNumber, char * tokenValue);
 void printAST(astNode * node, int depth);
+
+#endif

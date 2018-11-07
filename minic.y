@@ -1,6 +1,7 @@
 %{
         #include <stdio.h>
         #include "ast.h"
+        #include "ucodegen.h"
 
         extern FILE *yyin;
         astNode * root;

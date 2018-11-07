@@ -1,3 +1,6 @@
+#ifndef _UCODEGEN_H_
+#define _UCODEGEN_H_
+
 #define HASH_SIZE 31
 #define STACK_SIZE 16
 #define TABLE_SIZE 100
@@ -35,3 +38,5 @@ typedef struct _symboltable{
 }symtab;
 
 void ucodegen(astNode * root, FILE * dest, int printsy);
+
+#endif
