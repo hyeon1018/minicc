@@ -3,6 +3,9 @@
         #include "ast.h"
         #include "ucodegen.h"
 
+        int yyerror(char *s);
+        int yylex();
+
         extern FILE *yyin;
         astNode * root;
 %}
